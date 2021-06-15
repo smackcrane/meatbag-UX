@@ -37,10 +37,15 @@ row = {}
 
 for name,question in questions:
     print(question['query'])
+
+    # list past answers as options
     if '__past__' in question.get('options', ''):
+        print('  (' + ' | '.join(data[name].unique()) + ')')
+    # ignore empty options
+    elif not question.get('options', ''):
         pass
     else:
-        print(' '.join(question.get('options', '')))
+        print('  (' + ' | '.join(question.get('options', '')) + ')')
     response = input("> ")
     row[name] = response
 
