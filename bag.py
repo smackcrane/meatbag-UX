@@ -25,7 +25,10 @@ for arg in arg_iter:
 if data is None:
     empty_data = {k:[] for k in spec['questions'].keys()}
     data = pd.DataFrame(empty_data)
-#print(data)
+# check if there are new questions
+for q in spec['questions'].keys():
+    if q not in data:
+        data[q] = [None for _ in range(data.shape[0])]
 
 # iterate through questions
 questions = spec['questions'].items()
