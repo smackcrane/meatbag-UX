@@ -1,0 +1,5 @@
+
+notes/
+data/*.csv
+__pycache__
+*.swp
