@@ -5,6 +5,7 @@ import sys
 import os
 import pandas as pd
 import json
+import datetime
 
 arg_iter = iter(sys.argv[1:])
 spec = None
@@ -64,6 +65,13 @@ for name,question in questions:
     row[name] = response
 
 # autogen date/time cols
+for q in ['date', 'time']:
+    if q not in data:
+        data[q] = [None for _ in range(data.shape[0])]
+
+row['date'] = datetime.date.today().isoformat()
+row['time'] = datetime.datetime.now().time().isoformat(timespec='minutes')
+        
 
 data = data.append(row, ignore_index=True)
 data.to_csv(data_path, index=False)
