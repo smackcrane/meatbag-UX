@@ -19,6 +19,29 @@ for arg in arg_iter:
     else:
         raise Exception(f'Argument {arg} not supported or survey not found')
 
-print(spec)
+#print(spec)
 
 # initialize data frame if absent
+if data is None:
+    empty_data = {k:[] for k in spec['questions'].keys()}
+    data = pd.DataFrame(empty_data)
+#print(data)
+
+# iterate through questions
+questions = spec['questions'].items()
+
+row = {}
+
+for name,question in questions:
+    print(question['query'])
+    if '__past__' in question.get('options', ''):
+        pass
+    else:
+        print(' '.join(question.get('options', '')))
+    response = input("> ")
+    row[name] = response
+
+# autogen date/time cols
+
+data = data.append(row, ignore_index=True)
+data.to_csv(data_path, index=False)
