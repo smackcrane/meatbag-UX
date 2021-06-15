@@ -14,7 +14,8 @@ for arg in arg_iter:
             data = pd.read_csv(data_path)
         except FileNotFoundError:
             data = None
-        spec = yaml.load(f'surveys/{arg}.yaml')
+        with open(f'surveys/{arg}.yaml', 'r') as f:
+            spec = yaml.load(f, Loader=yaml.SafeLoader)
     else:
         raise Exception(f'Argument {arg} not supported or survey not found')
 
