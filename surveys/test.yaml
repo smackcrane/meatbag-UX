@@ -1,18 +1,18 @@
 
 questions:
-  - tea:
-    query: What tea today?
-    options:
-      - __past__
-  - teatime:
-    query: What time tea?
-    options:
-      - morning
-      - mid-day
-      - afternoon
-      - evening
-  - meditation:
-    query: How long meditation?
+    tea:
+        query: What tea today?
+        options:
+            - __past__
+    teatime:
+        query: What time tea?
+        options:
+            - morning
+            - mid-day
+            - afternoon
+            - evening
+    meditation:
+        query: How long meditation?
 
 
 
