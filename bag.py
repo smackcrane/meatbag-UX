@@ -4,6 +4,7 @@ import yaml
 import sys
 import os
 import pandas as pd
+import json
 
 arg_iter = iter(sys.argv[1:])
 spec = None
@@ -46,7 +47,20 @@ for name,question in questions:
         pass
     else:
         print('  (' + ' | '.join(question.get('options', '')) + ')')
-    response = input("> ")
+        
+    # structured input
+    if 'key-value' in question:
+        response = {}
+        key = input('key: > ')
+        while key != 'q':
+            value = input('value: > ')
+            if value != 'q':
+                response[key] = value
+            key = input('key: > ')
+        response = json.dumps(response)
+    # single input
+    else:
+        response = input("> ")
     row[name] = response
 
 # autogen date/time cols
