@@ -17,7 +17,7 @@ for arg in arg_iter:
     if spec is None and os.path.exists(f'{script_path}/surveys/{arg}.yaml'):
         data_path = f'{script_path}/data/{arg}.csv'
         try:
-            data = pd.read_csv(data_path)
+            data = pd.read_csv(data_path, na_values=[], keep_default_na=False)
         except FileNotFoundError:
             data = None
         with open(f'{script_path}/surveys/{arg}.yaml', 'r') as f:
@@ -60,11 +60,20 @@ for name,question in questions:
     # structured input
     if 'key-value' in question:
         response = {}
+        # get past keys and values
+        past_dicts = [json.loads(s) for s in data[name] if s]
+        past_df = pd.DataFrame(past_dicts)
+        keys = past_df.columns
+        key_completer = tab_completer(keys)
+        readline.set_completer(key_completer)
         key = input('key: > ')
         while key != 'q':
+            value_completer = tab_completer(past_df.get(key, []))
+            readline.set_completer(value_completer)
             value = input('value: > ')
             if value != 'q':
                 response[key] = value
+            readline.set_completer(key_completer)
             key = input('key: > ')
         response = json.dumps(response)
     # single input

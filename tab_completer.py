@@ -1,7 +1,8 @@
+import pandas as pd
 
 class tab_completer:
     def __init__(self, options):
-        self.options = options
+        self.options = pd.unique([s for s in options if type(s)==str])
         self.matches = []
 
     def __call__(self, text, state):
