@@ -6,6 +6,8 @@ import os
 import pandas as pd
 import json
 import datetime
+import readline
+from tab_completer import tab_completer
 
 script_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -37,6 +39,9 @@ for q in spec['questions'].keys():
 # iterate through questions
 questions = spec['questions'].items()
 
+# turn on tab completion
+readline.parse_and_bind("tab: complete")
+
 row = {}
 
 for name,question in questions:
@@ -44,13 +49,14 @@ for name,question in questions:
 
     # list past answers as options
     if '__past__' in question.get('options', ''):
-        print('  (' + ' | '.join(data[name].unique()) + ')')
-    # ignore empty options
-    elif not question.get('options', ''):
-        pass
+        options = data[name].unique()
+        print('  (' + ' | '.join(options) + ')')
+    # or list specified options
     else:
-        print('  (' + ' | '.join(question.get('options', '')) + ')')
-        
+        options = question.get('options', [])
+        if options:
+            print('  (' + ' | '.join(options) + ')')
+
     # structured input
     if 'key-value' in question:
         response = {}
@@ -63,6 +69,9 @@ for name,question in questions:
         response = json.dumps(response)
     # single input
     else:
+        # set tab completion function
+        completer = tab_completer(options)
+        readline.set_completer(completer)
         response = input("> ")
     row[name] = response
 
