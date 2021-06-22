@@ -51,7 +51,13 @@ for name,question in questions:
     if '__past__' in question.get('options', ''):
         options = data[name].unique()
         print('  (' + ' | '.join(options) + ')')
-    # or list specified options
+    # or past words
+    elif '__past_words__' in question.get('options', ''):
+        options = data[name]
+        options = ' '.join(options).split()
+        options = pd.unique(options)
+        print('  (' + ' | '.join(options) + ')')
+    # or specified options
     else:
         options = question.get('options', [])
         if options:

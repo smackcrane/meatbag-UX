@@ -13,6 +13,17 @@ questions:
             - evening
     meditation:
         query: How long meditation?
+    bike:
+        query: How bike today?
+    mood:
+        query: Mood words?
+        options:
+            - __past_words__
+    tasks:
+        query: whom tasks?
+        options:
+            - task name is key, start / end is value
+        key-value:
 
 
 

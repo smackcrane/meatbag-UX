@@ -1,3 +1,10 @@
-tea,teatime,meditation,bike
-Boat Captain,mid-day,10m,
-Boat Captain,mid-day,10m,later
+tea,teatime,meditation,bike,tasks,date,time,mood
+Boat Captain,mid-day,10m,,,,,
+Boat Captain,mid-day,10m,later,,,,
+golden peacock,morning,120m,hecking,,,,
+boot captine,evening,10m,lots,{},,,
+a,b,c,d,{},2021-06-15,16:12,
+,,,,"{""beep"": ""boop"", """": """"}",2021-06-18,16:05,
+,,,,"{""zeep"": ""zoop""}",2021-06-18,16:10,
+,,,,"{""beep"": ""boop"", ""zeep"": ""zoop""}",2021-06-18,16:21,
+ripu,mid-day,0,0,{},2021-06-22,14:23,calm focused energetic
