@@ -34,7 +34,7 @@ if data is None:
 # check if there are new questions
 for q in spec['questions'].keys():
     if q not in data:
-        data[q] = [None for _ in range(data.shape[0])]
+        data[q] = ['' for _ in range(data.shape[0])]
 
 # iterate through questions
 questions = spec['questions'].items()
