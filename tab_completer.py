@@ -1,4 +1,5 @@
 import pandas as pd
+import readline
 
 class tab_completer:
     def __init__(self, options):
@@ -7,7 +8,9 @@ class tab_completer:
 
     def __call__(self, text, state):
         if state == 0:
-            self.matches = [opt for opt in self.options if opt.startswith(text)]
+            line = readline.get_line_buffer()
+            skip = line.rfind(' ') + 1
+            self.matches = [opt[skip:] for opt in self.options if opt.startswith(line)] or [opt for opt in self.options if opt.startswith(text)]
             return self.matches[0]
         elif state < len(self.matches):
             return self.matches[state]
