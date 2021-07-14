@@ -72,9 +72,12 @@ class DataCalendar(calendar.TextCalendar):
         out += '\n'*1
         
         for week in self.monthdays2calendar(year, month):
-            # get rid of empty days that the package uses
-            week = [(d, wd) for (d, wd) in week if d != 0]
             for (day, day_of_wk) in week:
+                # handle 'empty' days, before month starts or after it ends
+                if day == 0:
+                    out += ' '*date_width
+                    out += ' '
+                    continue
                 ISO_date = datetime.date(year, month, day).isoformat()
                 value = data_dict.get(ISO_date, '')
                 # extract relevant information for visualization
