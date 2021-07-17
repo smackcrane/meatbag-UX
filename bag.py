@@ -49,11 +49,11 @@ for name,question in questions:
 
     # list past answers as options
     if '__past__' in question.get('options', ''):
-        options = data[name].unique()
+        options = data[name].iloc[::-1].unique()
         print('  (' + ' | '.join(options) + ')')
     # or past words
     elif '__past_words__' in question.get('options', ''):
-        options = data[name]
+        options = data[name].iloc[::-1]
         options = ' '.join(options).split()
         options = pd.unique(options)
         print('  (' + ' | '.join(options) + ')')
