@@ -42,7 +42,16 @@ questions = spec['questions'].items()
 # turn on tab completion
 readline.parse_and_bind("tab: complete")
 
-row = {}
+# check if survey is marked as daily and already has some entries
+replace_data = False
+today = data.loc[data['date']==datetime.date.today().isoformat()]
+if 'daily' in spec.keys() and not today.empty:
+    replace_data = True
+    [idx] = today.index.values
+    today = today.iloc[0]
+    row = today.to_dict()
+else:
+    row = {}
 
 for name,question in questions:
     print(question['query'])
@@ -87,7 +96,14 @@ for name,question in questions:
         # set tab completion function
         completer = tab_completer(options)
         readline.set_completer(completer)
+        # autofill with previous answer if any
+        fill = row.get(name, '')
+        if fill:
+            readline.set_startup_hook(lambda: readline.insert_text(fill))
+        # read response
         response = input("> ")
+        # reset autofill
+        readline.set_startup_hook()
     row[name] = response
 
 # autogen date/time cols
@@ -97,7 +113,8 @@ for q in ['date', 'time']:
 
 row['date'] = datetime.date.today().isoformat()
 row['time'] = datetime.datetime.now().time().isoformat(timespec='minutes')
-        
 
+if replace_data:
+    data.drop(idx, axis=0, inplace=True)
 data = data.append(row, ignore_index=True)
 data.to_csv(data_path, index=False)
