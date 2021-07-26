@@ -35,8 +35,7 @@ if data is None:
 for q in spec['questions'].keys():
     if q not in data:
         data[q] = ['' for _ in range(data.shape[0])]
-
-# autogen date/time cols
+# check if there are date/time columns
 for q in ['date', 'time']:
     if q not in data:
         data[q] = [None for _ in range(data.shape[0])]
@@ -102,7 +101,7 @@ for name,question in questions:
         completer = tab_completer(options)
         readline.set_completer(completer)
         # autofill with previous answer if any
-        fill = row.get(name, '')
+        fill = str(row.get(name, ''))
         if fill:
             readline.set_startup_hook(lambda: readline.insert_text(fill))
         # read response
@@ -111,6 +110,7 @@ for name,question in questions:
         readline.set_startup_hook()
     row[name] = response
 
+# autogen date/time cols
 row['date'] = datetime.date.today().isoformat()
 row['time'] = datetime.datetime.now().time().isoformat(timespec='minutes')
 
