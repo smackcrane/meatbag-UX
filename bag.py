@@ -36,6 +36,11 @@ for q in spec['questions'].keys():
     if q not in data:
         data[q] = ['' for _ in range(data.shape[0])]
 
+# autogen date/time cols
+for q in ['date', 'time']:
+    if q not in data:
+        data[q] = [None for _ in range(data.shape[0])]
+
 # iterate through questions
 questions = spec['questions'].items()
 
@@ -105,11 +110,6 @@ for name,question in questions:
         # reset autofill
         readline.set_startup_hook()
     row[name] = response
-
-# autogen date/time cols
-for q in ['date', 'time']:
-    if q not in data:
-        data[q] = [None for _ in range(data.shape[0])]
 
 row['date'] = datetime.date.today().isoformat()
 row['time'] = datetime.datetime.now().time().isoformat(timespec='minutes')
