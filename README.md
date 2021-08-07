@@ -5,7 +5,6 @@
 
 * To create survey, create a file <name>.yaml under ./surveys/ following the format of test.yaml:
 
----
 
 ```
 questions:
@@ -36,7 +35,6 @@ questions:
 
 ```
 
----
 
   * The value under 'options' may be "\_\_past\_\_" to list all past responses as options, or "\_\_past\_words\_\_" to list all words used in past responses as options
   
@@ -44,15 +42,12 @@ questions:
   
 * To visualize data in calendar format:
 
-***
 
 ```
 > python3 -i DataCalendar.py
 >>>
 >>>
 ```
-
-***
 
 
 ## Install
