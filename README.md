@@ -33,6 +33,7 @@ questions:
 
 ```
 
+  * Options are not enforced, just printed along with the prompt
 
   * The value under 'options' may be "\_\_past\_\_" to list all past responses as options, or "\_\_past\_words\_\_" to list all words used in past responses as options
   
@@ -53,16 +54,9 @@ questions:
 Here's an example script that will create a bash wrapper for 'bag' command
 
 ```bash
-
 cd ~/projects/meatbag-ux
 path_loc=/usr/local/bin
-cat <<EOF >$path_loc/bag
-
-#!/bin/bash
-python3 $PWD/bag.py \$@
-
-EOF
-chmod +x $path_loc/bag
+ln -s ./bag.py $path_loc/bag
 ```
 
 
