@@ -3,7 +3,7 @@
 
 ## Usage
 
-* To create survey, create a file <name>.yaml under ./surveys/ following the format of test.yaml:
+* To create survey, create a file \<name\>.yaml under ./surveys/ following the format of test.yaml:
 
 
 ```
@@ -38,7 +38,7 @@ questions:
 
   * The value under 'options' may be "\_\_past\_\_" to list all past responses as options, or "\_\_past\_words\_\_" to list all words used in past responses as options
   
-  * Data from survey is saved at ./data/<name>.yaml
+  * Data from survey is saved at ./data/\<name\>.yaml
   
 * To visualize data in calendar format:
 
@@ -54,7 +54,7 @@ questions:
 
 Here's an example script that will create a bash wrapper for 'bag' command
 
-```
+```bash
 
 cd ~/projects/meatbag-ux
 path_loc=/usr/local/bin
