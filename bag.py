@@ -11,9 +11,19 @@ from tab_completer import tab_completer
 
 script_path = os.path.dirname(os.path.realpath(__file__))
 
+help_text = f"""meatbag_ux
+
+bag <survey_name>
+- begins prompting for answers to questions defined in {script_path}/surveys/<survey_name>.yaml
+- saves responses as a row in {script_path}/data/<survey_name>.yaml
+"""
+
 arg_iter = iter(sys.argv[1:])
 spec = None
 for arg in arg_iter:
+    if arg == '-h' or arg == '--help':
+        print(help_text)
+        sys.exit(0)
     if spec is None and os.path.exists(f'{script_path}/surveys/{arg}.yaml'):
         data_path = f'{script_path}/data/{arg}.csv'
         try:
@@ -26,6 +36,11 @@ for arg in arg_iter:
         raise Exception(f'Argument {arg} not supported or survey not found')
 
 #print(spec)
+
+# No argument given
+if spec is None:
+    print(help_text)
+    sys.exit(0)
 
 # initialize data frame if absent
 if data is None:
