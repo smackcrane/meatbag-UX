@@ -28,9 +28,7 @@ questions:
         options:
             - __past_words__
     tasks:
-        query: What tasks did you complete today?
-        options:
-            - task name is key, start / end is value
+        query: What tasks did you complete today? (task name is key, start / end is value)
         key-value:
 
 ```
