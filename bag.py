@@ -75,7 +75,7 @@ if 'daily' in spec.keys() and not today.empty:
     row = today.to_dict()
 else:
     # initialize data row with keys only
-    row = {q: None for q in questions}
+    row = {q[0]: '' for q in questions}
 
 # autogen date/time cols
 row['date'] = datetime.date.today().isoformat()
@@ -86,9 +86,9 @@ row['time'] = datetime.datetime.now().time().isoformat(timespec='minutes')
 if editor:
     # YAML is a hackier package and complains about numpy numeric types from pandas;
     #   also is more fiddly re: quotes
-    row_text = json.dumps(row, indent=4)
     EDITOR = os.getenv("EDITOR")
-    os.system(f"cat <<<'{row_text}' >/tmp/bag")
+    with open('/tmp/bag','w') as f:
+        json.dump(row,f,indent=4)
     os.system(f"{EDITOR} /tmp/bag")
     with open('/tmp/bag') as f:
         new_row = json.load(f)
