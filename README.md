@@ -51,12 +51,24 @@ questions:
 
 ## Install
 
-Here's an example script that will create a bash wrapper for 'bag' command
+Here's an example script that will create a symbolic link for 'bag' command
 
 ```bash
 cd ~/projects/meatbag-ux
 path_loc=/usr/local/bin
 ln -s ./bag.py $path_loc/bag
+```
+
+On the other hand, if for some reason you'd like to wrap it in bash:
+
+```bash
+cd ~/projects/meatbag-ux
+path_loc=/usr/local/bin
+cat <<EOF >$path_loc/bag
+#!/bin/bash
+python3 $PWD/bag.py \$@
+EOF
+chmod +x $path_loc/bag
 ```
 
 
