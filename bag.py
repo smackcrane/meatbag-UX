@@ -13,18 +13,22 @@ script_path = os.path.dirname(os.path.realpath(__file__))
 
 help_text = f"""meatbag_ux
 
-bag <survey_name>
+bag <survey_name> [--editor]
 - begins prompting for answers to questions defined in {script_path}/surveys/<survey_name>.yaml
 - saves responses as a row in {script_path}/data/<survey_name>.yaml
+- editor flag opens the row in a text editor (set by environment var $EDITOR) rather than going through survey incrementally. Only written for Unix at the moment.
 """
 
 arg_iter = iter(sys.argv[1:])
 spec = None
+editor = False
 for arg in arg_iter:
     if arg == '-h' or arg == '--help':
         print(help_text)
         sys.exit(0)
-    if spec is None and os.path.exists(f'{script_path}/surveys/{arg}.yaml'):
+    elif arg == '--editor':
+        editor = True
+    elif spec is None and os.path.exists(f'{script_path}/surveys/{arg}.yaml'):
         data_path = f'{script_path}/data/{arg}.csv'
         try:
             data = pd.read_csv(data_path, na_values=[], keep_default_na=False)
@@ -70,64 +74,80 @@ if 'daily' in spec.keys() and not today.empty:
     today = today.iloc[0]
     row = today.to_dict()
 else:
-    row = {}
-
-for name,question in questions:
-    print(question['query'])
-
-    # list past answers as options
-    if '__past__' in question.get('options', ''):
-        options = data[name].iloc[::-1].unique()
-        print('  (' + ' | '.join(options) + ')')
-    # or past words
-    elif '__past_words__' in question.get('options', ''):
-        options = data[name].iloc[::-1]
-        options = ' '.join(options).split()
-        options = pd.unique(options)
-        print('  (' + ' | '.join(options) + ')')
-    # or specified options
-    else:
-        options = question.get('options', [])
-        if options:
-            print('  (' + ' | '.join(options) + ')')
-
-    # structured input
-    if 'key-value' in question:
-        response = {}
-        # get past keys and values
-        past_dicts = [json.loads(s) for s in data[name] if s]
-        past_df = pd.DataFrame(past_dicts)
-        keys = past_df.columns
-        key_completer = tab_completer(keys)
-        readline.set_completer(key_completer)
-        key = input('key: > ')
-        while key != 'q':
-            value_completer = tab_completer(past_df.get(key, []))
-            readline.set_completer(value_completer)
-            value = input('value: > ')
-            if value != 'q':
-                response[key] = value
-            readline.set_completer(key_completer)
-            key = input('key: > ')
-        response = json.dumps(response)
-    # single input
-    else:
-        # set tab completion function
-        completer = tab_completer(options)
-        readline.set_completer(completer)
-        # autofill with previous answer if any
-        fill = str(row.get(name, ''))
-        if fill:
-            readline.set_startup_hook(lambda: readline.insert_text(fill))
-        # read response
-        response = input("> ")
-        # reset autofill
-        readline.set_startup_hook()
-    row[name] = response
+    # initialize data row with keys only
+    row = {q: None for q in questions}
 
 # autogen date/time cols
 row['date'] = datetime.date.today().isoformat()
 row['time'] = datetime.datetime.now().time().isoformat(timespec='minutes')
+
+
+# Quick data input in text editor
+if editor:
+    # YAML is a hackier package and complains about numpy numeric types from pandas;
+    #   also is more fiddly re: quotes
+    row_text = json.dumps(row, indent=4)
+    EDITOR = os.getenv("EDITOR")
+    os.system(f"cat <<<'{row_text}' >/tmp/bag")
+    os.system(f"{EDITOR} /tmp/bag")
+    with open('/tmp/bag') as f:
+        new_row = json.load(f)
+    row = new_row
+# Go through survey on command line
+else:
+    for name,question in questions:
+        print(question['query'])
+
+        # list past answers as options
+        if '__past__' in question.get('options', ''):
+            options = data[name].iloc[::-1].unique()
+            print('  (' + ' | '.join(options) + ')')
+        # or past words
+        elif '__past_words__' in question.get('options', ''):
+            options = data[name].iloc[::-1]
+            options = ' '.join(options).split()
+            options = pd.unique(options)
+            print('  (' + ' | '.join(options) + ')')
+        # or specified options
+        else:
+            options = question.get('options', [])
+            if options:
+                print('  (' + ' | '.join(options) + ')')
+
+        # structured input
+        if 'key-value' in question:
+            response = {}
+            # get past keys and values
+            past_dicts = [json.loads(s) for s in data[name] if s]
+            past_df = pd.DataFrame(past_dicts)
+            keys = past_df.columns
+            key_completer = tab_completer(keys)
+            readline.set_completer(key_completer)
+            key = input('key: > ')
+            while key != 'q':
+                value_completer = tab_completer(past_df.get(key, []))
+                readline.set_completer(value_completer)
+                value = input('value: > ')
+                if value != 'q':
+                    response[key] = value
+                readline.set_completer(key_completer)
+                key = input('key: > ')
+            response = json.dumps(response)
+        # single input
+        else:
+            # set tab completion function
+            completer = tab_completer(options)
+            readline.set_completer(completer)
+            # autofill with previous answer if any
+            fill = str(row.get(name, ''))
+            if fill:
+                readline.set_startup_hook(lambda: readline.insert_text(fill))
+            # read response
+            response = input("> ")
+            # reset autofill
+            readline.set_startup_hook()
+        row[name] = response
+
 
 if replace_data:
     data.drop(idx, axis=0, inplace=True)
