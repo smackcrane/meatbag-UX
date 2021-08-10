@@ -98,21 +98,22 @@ else:
     for name,question in questions:
         print(question['query'])
 
+        # Look at top level of survey spec for a default option set
+        option_spec = question.get('options', spec.get('default_options', ''))
         # list past answers as options
-        if '__past__' in question.get('options', ''):
+        if '__past__' in option_spec:
             options = data[name].iloc[::-1].unique()
-            print('  (' + ' | '.join(options) + ')')
+            print('  (' + ' | '.join(map(str, options)) + ')')
         # or past words
-        elif '__past_words__' in question.get('options', ''):
+        elif '__past_words__' in option_spec:
             options = data[name].iloc[::-1]
             options = ' '.join(options).split()
             options = pd.unique(options)
-            print('  (' + ' | '.join(options) + ')')
+            print('  (' + ' | '.join(map(str, options)) + ')')
         # or specified options
-        else:
-            options = question.get('options', [])
-            if options:
-                print('  (' + ' | '.join(options) + ')')
+        elif len(option_spec) > 0:
+            options = option_spec
+            print('  (' + ' | '.join(options) + ')')
 
         # structured input
         if 'key-value' in question:
