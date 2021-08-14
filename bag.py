@@ -13,21 +13,28 @@ script_path = os.path.dirname(os.path.realpath(__file__))
 
 help_text = f"""meatbag_ux
 
-bag <survey_name> [--editor]
+bag <survey_name> [-e | --editor[=<int>]]
 - begins prompting for answers to questions defined in {script_path}/surveys/<survey_name>.yaml
 - saves responses as a row in {script_path}/data/<survey_name>.yaml
-- editor flag opens the row in a text editor (set by environment var $EDITOR) rather than going through survey incrementally. Only written for Unix at the moment.
+- editor flag opens the row in a text editor (set by environment var $EDITOR) rather than going through survey incrementally. Only written for Unix at the moment. Intended mainly for daily surveys.
+  - <int> argument to editor flag gives offset w/r/t today in units of days for row lookup for daily surveys
 """
 
 arg_iter = iter(sys.argv[1:])
 spec = None
 editor = False
+offset = 0
 for arg in arg_iter:
     if arg == '-h' or arg == '--help':
         print(help_text)
         sys.exit(0)
-    elif arg == '--editor':
+    elif '--editor' in arg or arg == '-e':
         editor = True
+        try:
+            # accept 'offset' argument to flat
+            offset = int(arg.split('=')[1])
+        except Exception:
+            pass
     elif spec is None and os.path.exists(f'{script_path}/surveys/{arg}.yaml'):
         data_path = f'{script_path}/data/{arg}.csv'
         try:
@@ -67,7 +74,7 @@ readline.parse_and_bind("tab: complete")
 
 # check if survey is marked as daily and already has some entries
 replace_data = False
-today = data.loc[data['date']==datetime.date.today().isoformat()]
+today = data.loc[data['date']==(datetime.date.today() + datetime.timedelta(offset)).isoformat()]
 if 'daily' in spec.keys() and not today.empty:
     replace_data = True
     [idx] = today.index.values
@@ -78,7 +85,7 @@ else:
     row = {q[0]: '' for q in questions}
 
 # autogen date/time cols
-row['date'] = datetime.date.today().isoformat()
+row['date'] = (datetime.date.today() + datetime.timedelta(offset)).isoformat()
 row['time'] = datetime.datetime.now().time().isoformat(timespec='minutes')
 
 
