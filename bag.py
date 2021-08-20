@@ -35,6 +35,12 @@ for arg in arg_iter:
             offset = int(arg.split('=')[1])
         except Exception:
             pass
+    elif '-o' in arg:
+        try:
+            # accept 'offset' argument to flat
+            offset = int(arg.split('=')[1])
+        except Exception:
+            pass
     elif spec is None and os.path.exists(f'{script_path}/surveys/{arg}.yaml'):
         data_path = f'{script_path}/data/{arg}.csv'
         try:
