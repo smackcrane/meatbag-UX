@@ -108,59 +108,79 @@ if editor:
     row = new_row
 # Go through survey on command line
 else:
-    for name,question in questions:
-        print(question['query'])
+    # manual loop to allow going backwards
+    i = 0
+    while i < len(questions):
+        try:
+            name, question = list(questions)[i]
+            print(question['query'])
 
-        # Look at top level of survey spec for a default option set
-        option_spec = question.get('options', spec.get('default_options', ''))
-        # list past answers as options
-        if '__past__' in option_spec:
-            options = data[name].iloc[::-1].unique()
-            print('  (' + ' | '.join(map(str, options)) + ')')
-        # or past words
-        elif '__past_words__' in option_spec:
-            options = data[name].iloc[::-1]
-            options = ' '.join(options).split()
-            options = pd.unique(options)
-            print('  (' + ' | '.join(map(str, options)) + ')')
-        # or specified options
-        elif len(option_spec) > 0:
-            options = option_spec
-            print('  (' + ' | '.join(options) + ')')
+            # Look at top level of survey spec for a default option set
+            option_spec = question.get('options', spec.get('default_options', ''))
+            # list past answers as options
+            if '__past__' in option_spec:
+                options = data[name].iloc[::-1].unique()
+                print('  (' + ' | '.join(map(str, options)) + ')')
+            # or past words
+            elif '__past_words__' in option_spec:
+                options = data[name].iloc[::-1]
+                options = ' '.join(options).split()
+                options = pd.unique(options)
+                print('  (' + ' | '.join(map(str, options)) + ')')
+            # or specified options
+            elif len(option_spec) > 0:
+                options = option_spec
+                print('  (' + ' | '.join(options) + ')')
 
-        # structured input
-        if 'key-value' in question:
-            response = {}
-            # get past keys and values
-            past_dicts = [json.loads(s) for s in data[name] if s]
-            past_df = pd.DataFrame(past_dicts)
-            keys = past_df.columns
-            key_completer = tab_completer(keys)
-            readline.set_completer(key_completer)
-            key = input('key: > ')
-            while key != 'q':
-                value_completer = tab_completer(past_df.get(key, []))
-                readline.set_completer(value_completer)
-                value = input('value: > ')
-                if value != 'q':
-                    response[key] = value
+            # structured input
+            if 'key-value' in question:
+                response = {}
+                # get past keys and values
+                past_dicts = [json.loads(s) for s in data[name] if s]
+                past_df = pd.DataFrame(past_dicts)
+                keys = past_df.columns
+                key_completer = tab_completer(keys)
                 readline.set_completer(key_completer)
                 key = input('key: > ')
-            response = json.dumps(response)
-        # single input
-        else:
-            # set tab completion function
+                while key != 'q':
+                    value_completer = tab_completer(past_df.get(key, []))
+                    readline.set_completer(value_completer)
+                    value = input('value: > ')
+                    if value != 'q':
+                        response[key] = value
+                    readline.set_completer(key_completer)
+                    key = input('key: > ')
+                response = json.dumps(response)
+            # single input
+            else:
+                # set tab completion function
+                completer = tab_completer(options)
+                readline.set_completer(completer)
+                # autofill with previous answer if any
+                fill = str(row.get(name, ''))
+                if fill:
+                    readline.set_startup_hook(lambda: readline.insert_text(fill))
+                # read response
+                response = input("> ")
+                # reset autofill
+                readline.set_startup_hook()
+            row[name] = response
+            i += 1
+        except KeyboardInterrupt:
+            options = ['quit', 'q', 'write and quit', 'wq', 'back']
             completer = tab_completer(options)
             readline.set_completer(completer)
-            # autofill with previous answer if any
-            fill = str(row.get(name, ''))
-            if fill:
-                readline.set_startup_hook(lambda: readline.insert_text(fill))
-            # read response
-            response = input("> ")
-            # reset autofill
             readline.set_startup_hook()
-        row[name] = response
+            print('\n\nKeyboardInterrupt')
+            print('  (' + ' | '.join(map(str, options)) + ')')
+            response = input("> ")
+            if response == 'quit' or response == 'q':
+                raise
+            elif response == 'write and quit' or response == 'wq':
+                break
+            elif response == 'back':
+                i -= 1
+
 
 
 if replace_data:
