@@ -142,11 +142,11 @@ else:
                 key_completer = tab_completer(keys)
                 readline.set_completer(key_completer)
                 key = input('key: > ')
-                while key != 'q':
+                while key != 'q' and key != '':
                     value_completer = tab_completer(past_df.get(key, []))
                     readline.set_completer(value_completer)
                     value = input('value: > ')
-                    if value != 'q':
+                    if value != 'q' and value != '':
                         response[key] = value
                     readline.set_completer(key_completer)
                     key = input('key: > ')
