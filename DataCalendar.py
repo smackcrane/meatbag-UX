@@ -1,9 +1,22 @@
 
+import math
 import pandas as pd
 import calendar
 import datetime
 import os
 
+# utility to strip ANSI escape codes
+# thanks https://stackoverflow.com/a/14889588
+import re
+strip_ANSI_pat = re.compile(r"""
+    \x1b     # literal ESC
+    \[       # literal [
+    [;\d]*   # zero or more digits or semicolons
+    [A-Za-z] # a letter
+    """, re.VERBOSE).sub
+
+def strip_ANSI(s):
+    return strip_ANSI_pat("", s)
 
 # subclass of TextCalendar that displays calendar filled with data
 class DataCalendar(calendar.TextCalendar):
@@ -21,7 +34,9 @@ class DataCalendar(calendar.TextCalendar):
             terminal_width = 76
 
         # compute date box width
-        val_length = lambda x: len(str(visualize(x)))
+        val_length = lambda x: len(
+                strip_ANSI(str(visualize(x, dataset=data_dict)))
+                )
         max_len = max(map(val_length, data_dict.values()))
         date_width = min((terminal_width-6) // 7, max_len)
         # compute total output width
@@ -81,9 +96,9 @@ class DataCalendar(calendar.TextCalendar):
                 ISO_date = datetime.date(year, month, day).isoformat()
                 value = data_dict.get(ISO_date, '')
                 # extract relevant information for visualization
-                value = visualize(value)
+                value = visualize(value, dataset=data_dict)
                 s = str(value).center(date_width)
-                if len(s) > date_width:
+                if len(strip_ANSI(s)) > date_width:
                     s = s[:date_width]
                 out += s
                 out += ' '
@@ -92,7 +107,87 @@ class DataCalendar(calendar.TextCalendar):
         return out
 
     # visualization function
+    # identity
+    def identity(self, value, **kwargs):
+        return value
+
+    # visualization function
     # returns a solid block if input is true, else 'empty block' i.e. spaces
-    def truth_blocks(self, value):
-        return '\u2588'*2 if value else ' '*2
+    def truth_blocks(self, value, **kwargs):
+        return '\u2588'*2 if value else '\u2591'*2
+
+    # visualization function
+    # returns blocks with brightness proportional to value
+    def value_blocks(self, value, dataset):
+        # hacky way to get rid of nan
+        vals = [x for x in dataset.values() if x >=0 or x <=0]
+        big = max(vals)
+        small = min(vals)
+        blocks = [f'\033[38;5;{i}m\u2588\u2588\033[0m' for i in range(236, 256)]
+        blocks = ['\u2591'*2]+blocks
+        n = len(blocks)
+        cutoffs = [small+(big-small)*i/n for i in range(n-1)]
+        bucket = 0
+        while value and bucket < n-1 and value >= cutoffs[bucket]:
+            bucket += 1
+        return blocks[bucket]
+
+    # visualization function
+    # returns blocks with brightness proportional to logarithm of value
+    def log_value_blocks(self, value, dataset):
+        # hacky way to get rid of nan
+        vals = [math.log(x) for x in dataset.values() if x > 0]
+        big = max(vals)
+        small = min(vals)
+        blocks = [f'\033[38;5;{i}m\u2588\u2588\033[0m' for i in range(236, 256)]
+        blocks = ['\u2591'*2]+blocks
+        n = len(blocks)
+        cutoffs = [small+(big-small)*i/n for i in range(n-1)]
+        bucket = 0
+        # god forgive me
+        while value and value > 0 and bucket < n-1 and math.log(value) >= cutoffs[bucket]:
+            bucket += 1
+        return blocks[bucket]
+
+    # visualization function
+    # returns blocks colored by value, roughly black -> blue -> red -> white
+    def color_blocks(self, value, dataset):
+        # hacky way to get rid of nan
+        vals = [x for x in dataset.values() if x >=0 or x <=0]
+        big = max(vals)
+        small = min(vals)
+        colormap =  [ [0,0,b] for b in range(256) ] + \
+                    [ [0,g,255] for g in range(256) ] + \
+                    [ [r,255,255] for r in range(256) ]
+        blocks = [f'\033[38;2;{r};{g};{b}m\u2588\u2588\033[0m' for [r,g,b] in colormap]
+        #blocks = ['\u2591'*2]+blocks
+        n = len(blocks)
+        cutoffs = [small+(big-small)*i/n for i in range(n-1)]
+        bucket = 0
+        while value and bucket < n-1 and value >= cutoffs[bucket]:
+            bucket += 1
+        return blocks[bucket]
+
+    # visualization function
+    # returns blocks colored by log value, black -> blue -> red -> white
+    def color_blocks(self, value, dataset):
+        # hacky way to get rid of nan
+        vals = [math.log(x) for x in dataset.values() if x > 0]
+        big = max(vals)
+        small = min(vals)
+        colormap =  [ [0,0,b] for b in range(256) ] + \
+                    [ [0,g,255] for g in range(256) ] + \
+                    [ [0,255,255-b] for b in range(256) ] + \
+                    [ [r,255,0] for r in range(256) ] + \
+                    [ [255,255-g,0] for g in range(256) ] + \
+                    [ [255,w,w] for w in range(256) ]
+        blocks = [f'\033[38;2;{r};{g};{b}m\u2588\u2588\033[0m' for [r,g,b] in colormap]
+        #blocks = ['\u2591'*2]+blocks
+        n = len(blocks)
+        cutoffs = [small+(big-small)*i/n for i in range(n-1)]
+        bucket = 0
+        # god forgive me
+        while value and value > 0 and bucket < n-1 and math.log(value) >= cutoffs[bucket]:
+            bucket += 1
+        return blocks[bucket]
 
