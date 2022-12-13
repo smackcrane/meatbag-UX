@@ -121,6 +121,12 @@ else:
             if '__past__' in option_spec:
                 options = data[name].iloc[::-1].unique()
                 print('  (' + ' | '.join(map(str, options)) + ')')
+            # or answers from past 30 days
+            elif '__past_30__' in option_spec:
+                cutoff = datetime.date.today() - datetime.timedelta(days=30)
+                past30 = data.loc[data['date'] > cutoff.isoformat()]
+                options = past30[name].iloc[::-1].unique()
+                print('  (' + ' | '.join(map(str, options)) + ')')
             # or past words
             elif '__past_words__' in option_spec:
                 options = data[name].iloc[::-1]
@@ -131,6 +137,8 @@ else:
             elif len(option_spec) > 0:
                 options = option_spec
                 print('  (' + ' | '.join(options) + ')')
+            else:
+                options = []
 
             # structured input
             if 'key-value' in question:
