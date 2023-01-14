@@ -145,10 +145,16 @@ else:
                 print('  (' + ' | '.join(map(str, options)) + ')')
             # or specified options
             elif len(option_spec) > 0:
-                options = option_spec
+                # ignore double underscored options
+                options = [op for op in option_spec if '__' not in op]
                 print('  (' + ' | '.join(options) + ')')
             else:
                 options = []
+            
+            # set default input
+            default = ''
+            if '__default__' in option_spec:
+                default = data[name].iloc[-1]
 
             # structured input
             if 'key-value' in question:
@@ -174,8 +180,8 @@ else:
                 # set tab completion function
                 completer = tab_completer(options)
                 readline.set_completer(completer)
-                # autofill with previous answer if any
-                fill = str(row.get(name, ''))
+                # autofill with previous answer or default if any
+                fill = str(row.get(name, '')) or default
                 if fill:
                     readline.set_startup_hook(lambda: readline.insert_text(fill))
                 # read response
