@@ -7,6 +7,7 @@ import pandas as pd
 import json
 import datetime
 import readline
+import re
 from tab_completer import tab_completer
 
 script_path = os.path.dirname(os.path.realpath(__file__))
@@ -117,13 +118,22 @@ else:
 
             # Look at top level of survey spec for a default option set
             option_spec = question.get('options', spec.get('default_options', ''))
+            # check for __past_n__ option
+            past_n = next(
+                        filter(
+                            lambda s: re.match(r'__past_\d+__', s),
+                            option_spec),
+                        None)
             # list past answers as options
             if '__past__' in option_spec:
                 options = data[name].iloc[::-1].unique()
                 print('  (' + ' | '.join(map(str, options)) + ')')
-            # or answers from past 30 days
-            elif '__past_30__' in option_spec:
-                cutoff = datetime.date.today() - datetime.timedelta(days=30)
+            # or answers from past n days
+            elif past_n:
+                # NB past_n = '__past_XX__' for some digits XX
+                # so past_n.split('_') = ['', '', 'past', 'XX', '', '']
+                n = int(past_n.split('_')[3])
+                cutoff = datetime.date.today() - datetime.timedelta(days=n)
                 past30 = data.loc[data['date'] > cutoff.isoformat()]
                 options = past30[name].iloc[::-1].unique()
                 print('  (' + ' | '.join(map(str, options)) + ')')
