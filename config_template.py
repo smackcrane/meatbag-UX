@@ -9,4 +9,4 @@
 
 path = '/path/to/meatbag-UX' # NB no trailing `/`
 
-remote = False
+remote = False # NB no trailing `/`

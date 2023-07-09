@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import yaml
-import sys
 import os
 import pandas as pd
 import json
@@ -11,6 +10,8 @@ import re
 from tab_completer import tab_completer
 import argparse
 import config
+from sync import sync
+from subprocess import CalledProcessError
 
 
 parser = argparse.ArgumentParser(
@@ -33,8 +34,22 @@ parser.add_argument(
         default=0,
         help='date offset to record, in negative days; also used to look up and edit existing record for "daily" surveys; e.g. `bag -o1 foo` will record an entry for survey `foo` timestamed yesterday, or in case `foo` is a daily survey, will edit the entry from yesterday.'
 )
+parser.add_argument(
+        '--sync',
+        action='store_true',
+        help='sync survey data file with remote and exit.'
+)
 
 args = parser.parse_args()
+
+if args.sync:
+    print('syncing ... ', end='', flush=True)
+    try:
+        sync(args.survey)
+        print('done')
+    except CalledProcessError as e:
+        print('failed:\n'+str(e))
+    raise SystemExit
 
 # load survey
 survey_path = f'{config.path}/surveys/{args.survey}.yaml'
@@ -199,3 +214,12 @@ if replace_data:
     data.drop(idx, axis=0, inplace=True)
 data = data.append(row, ignore_index=True)
 data.to_csv(data_path, index=False)
+
+# sync with remote if configured
+if config.remote:
+    print('syncing ... ', end='', flush=True)
+    try:
+        sync(args.survey)
+        print('done')
+    except CalledProcessError as e:
+        print('failed:\n'+str(e))
