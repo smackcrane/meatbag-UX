@@ -9,61 +9,47 @@ import datetime
 import readline
 import re
 from tab_completer import tab_completer
+import argparse
 
 script_path = os.path.dirname(os.path.realpath(__file__))
 
-help_text = f"""meatbag_ux
+parser = argparse.ArgumentParser(
+        prog='bag',
+        description='fill out a user-defined survey and compile results in a csv file.',
+)
+parser.add_argument(
+        dest='survey',
+        metavar='survey_name',
+        help=f'survey name, refers to survey defined in {script_path}/surveys/<survey_name>.yaml')
+parser.add_argument(
+        '-e', '--editor',
+        action='store_true',
+        help='opens the row in a text editor (set by environment var $EDITOR) rather than going through survey incrementally. Only written for Unix at the moment. Intended mainly for daily surveys.'
+)
+parser.add_argument(
+        '-o', '--offset',
+        action='store',
+        type=int,
+        default=0,
+        help='date offset to record, in negative days; also used to look up and edit existing record for "daily" surveys; e.g. `bag -o1 foo` will record an entry for survey `foo` timestamed yesterday, or in case `foo` is a daily survey, will edit the entry from yesterday.'
+)
 
-bag <survey_name> [-e | --editor[=<int>]]
-- begins prompting for answers to questions defined in {script_path}/surveys/<survey_name>.yaml
-- saves responses as a row in {script_path}/data/<survey_name>.yaml
-- editor flag opens the row in a text editor (set by environment var $EDITOR) rather than going through survey incrementally. Only written for Unix at the moment. Intended mainly for daily surveys.
-  - <int> argument to editor flag gives offset w/r/t today in units of days for row lookup for daily surveys
-"""
+args = parser.parse_args()
 
-arg_iter = iter(sys.argv[1:])
-spec = None
-editor = False
-offset = 0
-for arg in arg_iter:
-    if arg == '-h' or arg == '--help':
-        print(help_text)
-        sys.exit(0)
-    elif '--editor' in arg or arg == '-e':
-        editor = True
-        try:
-            # accept 'offset' argument to flat
-            offset = int(arg.split('=')[1])
-        except Exception:
-            pass
-    elif '-o' in arg:
-        try:
-            # accept 'offset' argument to flat
-            offset = int(arg.split('=')[1])
-        except Exception:
-            pass
-    elif spec is None and os.path.exists(f'{script_path}/surveys/{arg}.yaml'):
-        data_path = f'{script_path}/data/{arg}.csv'
-        try:
-            data = pd.read_csv(data_path, na_values=[], keep_default_na=False)
-        except FileNotFoundError:
-            data = None
-        with open(f'{script_path}/surveys/{arg}.yaml', 'r') as f:
-            spec = yaml.load(f, Loader=yaml.SafeLoader)
-    else:
-        raise Exception(f'Argument {arg} not supported or survey not found')
+# load survey
+survey_path = f'{script_path}/surveys/{args.survey}.yaml'
+assert os.path.isfile(survey_path), f'survey not found at {survey_path}'
+with open(survey_path, 'r') as f:
+    spec = yaml.load(f, Loader=yaml.SafeLoader)
 
-#print(spec)
-
-# No argument given
-if spec is None:
-    print(help_text)
-    sys.exit(0)
-
-# initialize data frame if absent
-if data is None:
+# load data
+data_path = f'{script_path}/data/{args.survey}.csv'
+try:
+    data = pd.read_csv(data_path, na_values=[], keep_default_na=False)
+except FileNotFoundError:
     empty_data = {k:[] for k in spec['questions'].keys()}
     data = pd.DataFrame(empty_data)
+
 # check if there are new questions
 for q in spec['questions'].keys():
     if q not in data:
@@ -81,7 +67,9 @@ readline.parse_and_bind("tab: complete")
 
 # check if survey is marked as daily and already has some entries
 replace_data = False
-today = data.loc[data['date']==(datetime.date.today() + datetime.timedelta(offset)).isoformat()]
+todays_date = datetime.date.today() + datetime.timedelta(days=-args.offset)
+todays_date = todays_date.isoformat()
+today = data.loc[data['date']==todays_date]
 if 'daily' in spec.keys() and not today.empty:
     replace_data = True
     [idx] = today.index.values
@@ -92,12 +80,12 @@ else:
     row = {q[0]: '' for q in questions}
 
 # autogen date/time cols
-row['date'] = (datetime.date.today() + datetime.timedelta(offset)).isoformat()
+row['date'] = todays_date
 row['time'] = datetime.datetime.now().time().isoformat(timespec='minutes')
 
 
 # Quick data input in text editor
-if editor:
+if args.editor:
     # YAML is a hackier package and complains about numpy numeric types from pandas;
     #   also is more fiddly re: quotes
     EDITOR = os.getenv("EDITOR")
