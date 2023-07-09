@@ -3,6 +3,8 @@ notes/
 __pycache__
 *.swp
 
+config.py
+
 data/*.csv
 !data/test.csv
 

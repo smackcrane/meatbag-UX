@@ -10,8 +10,8 @@ import readline
 import re
 from tab_completer import tab_completer
 import argparse
+import config
 
-script_path = os.path.dirname(os.path.realpath(__file__))
 
 parser = argparse.ArgumentParser(
         prog='bag',
@@ -20,7 +20,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
         dest='survey',
         metavar='survey_name',
-        help=f'survey name, refers to survey defined in {script_path}/surveys/<survey_name>.yaml')
+        help=f'survey name, refers to survey defined in {config.path}/surveys/<survey_name>.yaml')
 parser.add_argument(
         '-e', '--editor',
         action='store_true',
@@ -37,13 +37,13 @@ parser.add_argument(
 args = parser.parse_args()
 
 # load survey
-survey_path = f'{script_path}/surveys/{args.survey}.yaml'
+survey_path = f'{config.path}/surveys/{args.survey}.yaml'
 assert os.path.isfile(survey_path), f'survey not found at {survey_path}'
 with open(survey_path, 'r') as f:
     spec = yaml.load(f, Loader=yaml.SafeLoader)
 
 # load data
-data_path = f'{script_path}/data/{args.survey}.csv'
+data_path = f'{config.path}/data/{args.survey}.csv'
 try:
     data = pd.read_csv(data_path, na_values=[], keep_default_na=False)
 except FileNotFoundError:
