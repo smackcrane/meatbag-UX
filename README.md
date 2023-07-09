@@ -36,8 +36,10 @@ questions:
   * Options are not enforced, just printed along with the prompt
 
   * The value under 'options' may be "\_\_past\_\_" to list all past responses as options, or "\_\_past\_words\_\_" to list all words used in past responses as options
+
+  * Including `daily` as a `query_name` tells meatbag to treat it as a daily survey---filling out the survey a second time in the same day will edit (and overwrite) the previous.
   
-  * Data from survey is saved at ./data/\<name\>.yaml
+  * Data from survey is saved at ./data/\<name\>.csv
   
 * To visualize data in calendar format:
 
