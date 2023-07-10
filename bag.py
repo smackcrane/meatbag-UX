@@ -134,13 +134,13 @@ else:
                 options = data[name].iloc[::-1].unique()
                 print('  (' + ' | '.join(map(str, options)) + ')')
             # or answers from past n days
-            elif past_n:
+            elif past_n and not data.empty: # empty data breaks .loc line
                 # NB past_n = '__past_XX__' for some digits XX
                 # so past_n.split('_') = ['', '', 'past', 'XX', '', '']
                 n = int(past_n.split('_')[3])
                 cutoff = datetime.date.today() - datetime.timedelta(days=n)
-                past30 = data.loc[data['date'] > cutoff.isoformat()]
-                options = past30[name].iloc[::-1].unique()
+                past_n_rows = data.loc[data['date'] > cutoff.isoformat()]
+                options = past_n_rows[name].iloc[::-1].unique()
                 print('  (' + ' | '.join(map(str, options)) + ')')
             # or past words
             elif '__past_words__' in option_spec:
