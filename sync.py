@@ -1,5 +1,6 @@
 
 import subprocess
+import os
 import pandas as pd
 import config
 
@@ -68,3 +69,5 @@ def sync(survey):
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
     )
+    # delete temp file
+    os.remove(f'{config.path}/data/tmp/{survey}.csv')
