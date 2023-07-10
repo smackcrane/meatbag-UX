@@ -4,7 +4,6 @@ import os
 import pandas as pd
 import config
 
-
 def sync(survey):
     local_path = f'{config.path}/data/{survey}.csv'
     remote_path = f'{config.remote}/{survey}.csv'
@@ -44,16 +43,18 @@ def sync(survey):
     remote_data = pd.read_csv(
             f'{config.path}/data/tmp/{survey}.csv',
             na_values=[],
-            keep_default_na=False
+            keep_default_na=False,
+            dtype=str, # load as str to avoid type conflict in drop_duplicates
     )
     local_data = pd.read_csv(
             local_path,
             na_values=[],
-            keep_default_na=False
+            keep_default_na=False,
+            dtype=str, # load as str to avoid type conflict in drop_duplicates
     )
-    
+
     # combine dataframes by concatenating and dropping duplicates
-    data = pd.concat((local_data, remote_data))
+    data = pd.concat((local_data, remote_data), ignore_index=True)
     data = data.drop_duplicates()
     # rough check that no local data was destroyed
     assert len(data)>=len(local_data), 'sync aborted: too many rows dropped'
