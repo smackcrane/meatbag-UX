@@ -34,14 +34,14 @@ def sync(survey):
 
     # download remote data, load remote data and local data
     subprocess.run(
-            f'rclone copy {remote_path} /tmp',
+            f'rclone copy {remote_path} {config.path}/data/tmp',
             shell=True,
             check=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
     )
     remote_data = pd.read_csv(
-            f'/tmp/{survey}.csv',
+            f'{config.path}/data/tmp/{survey}.csv',
             na_values=[],
             keep_default_na=False
     )

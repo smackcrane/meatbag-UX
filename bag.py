@@ -100,16 +100,18 @@ row['time'] = datetime.datetime.now().time().isoformat(timespec='minutes')
 
 
 # Quick data input in text editor
+temp_path = f'{config.path}/data/.{args.survey}.tmp'
 if args.editor:
     # YAML is a hackier package and complains about numpy numeric types from pandas;
     #   also is more fiddly re: quotes
     EDITOR = os.getenv("EDITOR")
-    with open('/tmp/bag','w') as f:
+    with open(temp_path,'w') as f:
         json.dump(row,f,indent=4)
-    os.system(f"{EDITOR} /tmp/bag")
-    with open('/tmp/bag') as f:
+    os.system(f"{EDITOR} {temp_path}")
+    with open(temp_path, 'r') as f:
         new_row = json.load(f)
     row = new_row
+    os.remove(temp_path)
 # Go through survey on command line
 else:
     # manual loop to allow going backwards
