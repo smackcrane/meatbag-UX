@@ -214,7 +214,7 @@ else:
 
 if replace_data:
     data.drop(idx, axis=0, inplace=True)
-data = data.append(row, ignore_index=True)
+data = pd.concat((data, pd.DataFrame(row, index=[0])), ignore_index=True)
 data.to_csv(data_path, index=False)
 
 # sync with remote if configured
