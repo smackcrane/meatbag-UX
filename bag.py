@@ -11,7 +11,7 @@ from tab_completer import tab_completer
 import argparse
 import config
 from sync import sync
-from subprocess import CalledProcessError
+import subprocess
 
 
 parser = argparse.ArgumentParser(
@@ -39,6 +39,21 @@ parser.add_argument(
         action='store_true',
         help='sync survey data file with remote and exit.'
 )
+parser.add_argument(
+        '--sync-up',
+        action='store_true',
+        help='copy local survey data file to remote and exit; use with CAUTION, remote data that does not exist on local will be destroyed.'
+)
+parser.add_argument(
+        '--sync-down',
+        action='store_true',
+        help='copy remote survey data file to local and exit; use with CAUTION, local data that does not exist on remote will be destroyed.'
+)
+parser.add_argument(
+        '--tail',
+        action='store_true',
+        help='print tail of data file and exit.'
+)
 
 args = parser.parse_args()
 
@@ -47,8 +62,34 @@ if args.sync:
     try:
         sync(args.survey)
         print('done')
-    except CalledProcessError as e:
+    except subprocess.CalledProcessError as e:
         print('failed:\n'+str(e))
+    raise SystemExit
+
+if args.sync_up:
+    print('syncing up ... ', end='', flush=True)
+    try:
+        sync(args.survey, direction="up")
+        print('done')
+    except subprocess.CalledProcessError as e:
+        print('failed:\n'+str(e))
+    raise SystemExit
+
+if args.sync_down:
+    print('syncing down ... ', end='', flush=True)
+    try:
+        sync(args.survey, direction="down")
+        print('done')
+    except subprocess.CalledProcessError as e:
+        print('failed:\n'+str(e))
+    raise SystemExit
+
+if args.tail:
+    subprocess.run(
+            f'tail {config.path}/data/{args.survey}.csv',
+            shell=True,
+            check=True,
+    )
     raise SystemExit
 
 # load survey
@@ -223,5 +264,5 @@ if config.remote:
     try:
         sync(args.survey)
         print('done')
-    except CalledProcessError as e:
+    except subprocess.CalledProcessError as e:
         print('failed:\n'+str(e))

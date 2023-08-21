@@ -4,9 +4,31 @@ import os
 import pandas as pd
 import config
 
-def sync(survey):
+def sync(survey, direction=None):
     local_path = f'{config.path}/data/{survey}.csv'
     remote_path = f'{config.remote}/{survey}.csv'
+
+    # if direction is up, copy up and return
+    if direction == 'up':
+        subprocess.run(
+                f'rclone copy {local_path} {config.remote}',
+                shell=True,
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+        )
+        return
+
+    # if direction is down, copy down and return
+    if direction == 'down':
+        subprocess.run(
+                f'rclone copy {remote_path} {config.path}/data',
+                shell=True,
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+        )
+        return
 
     # check if remote file exists; if not, copy up and return
     try:
