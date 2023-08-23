@@ -23,7 +23,7 @@ class DataCalendar(calendar.TextCalendar):
 
     # takes dict with ISO dates as keys and corresponding data as values
     # returns string containing text calendar with dates filled with data
-    def formatdata(self, data_dict, visualize=lambda x: x):
+    def formatdata(self, data_dict, visualize):
         # start output string
         out = ''
 
@@ -77,8 +77,8 @@ class DataCalendar(calendar.TextCalendar):
     # as well as year and month and width of date box
     # prints text calendar of single month with dates filled with data
     def formatmonthdata(
-            self, data_dict, year, month, date_width=2,
-            visualize = lambda x: x
+            self, data_dict, year, month, date_width,
+            visualize
             ):
         # start output string with month and weekdays header
         out = self.formatmonthname(year, month, date_width*7 + 6)
@@ -135,7 +135,7 @@ class DataCalendar(calendar.TextCalendar):
     # visualization function
     # returns blocks with brightness proportional to logarithm of value
     def log_value_blocks(self, value, dataset):
-        # hacky way to get rid of nan
+        # restrict to positive values and take log
         vals = [math.log(x) for x in dataset.values() if x > 0]
         big = max(vals)
         small = min(vals)
@@ -171,7 +171,7 @@ class DataCalendar(calendar.TextCalendar):
     # visualization function
     # returns blocks colored by log value, black -> blue -> red -> white
     def color_blocks(self, value, dataset):
-        # hacky way to get rid of nan
+        # restrict to positive values and take log
         vals = [math.log(x) for x in dataset.values() if x > 0]
         big = max(vals)
         small = min(vals)
@@ -182,7 +182,7 @@ class DataCalendar(calendar.TextCalendar):
                     [ [255,255-g,0] for g in range(256) ] + \
                     [ [255,w,w] for w in range(256) ]
         blocks = [f'\033[38;2;{r};{g};{b}m\u2588\u2588\033[0m' for [r,g,b] in colormap]
-        #blocks = ['\u2591'*2]+blocks
+        blocks = ['\u2591'*2]+blocks
         n = len(blocks)
         cutoffs = [small+(big-small)*i/n for i in range(n-1)]
         bucket = 0
