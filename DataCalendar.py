@@ -150,17 +150,19 @@ class DataCalendar(calendar.TextCalendar):
         return blocks[bucket]
 
     # visualization function
-    # returns blocks colored by value, roughly black -> blue -> red -> white
+    # returns blocks colored by value, roughly blue -> rainbow -> white
     def color_blocks(self, value, dataset):
         # hacky way to get rid of nan
         vals = [x for x in dataset.values() if x >=0 or x <=0]
         big = max(vals)
         small = min(vals)
-        colormap =  [ [0,0,b] for b in range(256) ] + \
-                    [ [0,g,255] for g in range(256) ] + \
-                    [ [r,255,255] for r in range(256) ]
+        colormap = [ [0,g,255] for g in range(256) ] + \
+                   [ [0,255,255-b] for b in range(256) ] + \
+                   [ [r,255,0] for r in range(256) ] + \
+                   [ [255,255-g,0] for g in range(256) ] + \
+                   [ [255,w,w] for w in range(256) ]
         blocks = [f'\033[38;2;{r};{g};{b}m\u2588\u2588\033[0m' for [r,g,b] in colormap]
-        #blocks = ['\u2591'*2]+blocks
+        blocks = ['\u2591'*2]+blocks
         n = len(blocks)
         cutoffs = [small+(big-small)*i/n for i in range(n-1)]
         bucket = 0
@@ -169,18 +171,17 @@ class DataCalendar(calendar.TextCalendar):
         return blocks[bucket]
 
     # visualization function
-    # returns blocks colored by log value, black -> blue -> red -> white
-    def color_blocks(self, value, dataset):
+    # returns blocks colored by log value, roughly blue -> rainbow -> white
+    def log_color_blocks(self, value, dataset):
         # restrict to positive values and take log
         vals = [math.log(x) for x in dataset.values() if x > 0]
         big = max(vals)
         small = min(vals)
-        colormap =  [ [0,0,b] for b in range(256) ] + \
-                    [ [0,g,255] for g in range(256) ] + \
-                    [ [0,255,255-b] for b in range(256) ] + \
-                    [ [r,255,0] for r in range(256) ] + \
-                    [ [255,255-g,0] for g in range(256) ] + \
-                    [ [255,w,w] for w in range(256) ]
+        colormap = [ [0,g,255] for g in range(256) ] + \
+                   [ [0,255,255-b] for b in range(256) ] + \
+                   [ [r,255,0] for r in range(256) ] + \
+                   [ [255,255-g,0] for g in range(256) ] + \
+                   [ [255,w,w] for w in range(256) ]
         blocks = [f'\033[38;2;{r};{g};{b}m\u2588\u2588\033[0m' for [r,g,b] in colormap]
         blocks = ['\u2591'*2]+blocks
         n = len(blocks)
