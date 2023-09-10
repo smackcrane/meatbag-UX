@@ -101,8 +101,18 @@ with open(survey_path, 'r') as f:
 # load data
 data_path = f'{config.path}/data/{args.survey}.csv'
 try:
-    data = pd.read_csv(data_path, na_values=[], keep_default_na=False)
+    dtype = {}
+    for name, specs in spec['questions'].items():
+        if 'dtype' in specs:
+            dtype[name] = specs['dtype']
+    data = pd.read_csv(
+            data_path,
+            dtype=dtype,
+            na_values=[],
+            keep_default_na=False
+    )
 except FileNotFoundError:
+    dtype = {}
     empty_data = {k:[] for k in spec['questions'].keys()}
     data = pd.DataFrame(empty_data)
 
@@ -115,7 +125,7 @@ for q in ['date', 'time']:
     if q not in data:
         data[q] = [None for _ in range(data.shape[0])]
 
-# iterate through questions
+# list of questions
 questions = spec['questions'].items()
 
 # turn on tab completion
@@ -255,8 +265,9 @@ else:
 
 if replace_data:
     data.drop(idx, axis=0, inplace=True)
-data = pd.concat((data, pd.DataFrame(row, index=[0])), ignore_index=True)
-data.to_csv(data_path, index=False)
+new_row = pd.DataFrame(row, index=[0]).astype(dtype=dtype)
+data = pd.concat((data, new_row), ignore_index=True)
+data.to_csv(data_path, index=False, float_format='%.2f')
 
 # sync with remote if configured
 if config.remote:
