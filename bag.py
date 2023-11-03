@@ -5,7 +5,10 @@ import os
 import pandas as pd
 import json
 import datetime
-import readline
+try:
+    import gnureadline as readline
+except ImportError:
+    import readline
 import re
 from tab_completer import tab_completer
 import argparse
