@@ -269,9 +269,12 @@ data.to_csv(data_path, index=False)
 
 # sync with remote if configured
 if config.remote:
-    print('syncing ... ', end='', flush=True)
-    try:
-        sync(args.survey)
-        print('done')
-    except subprocess.CalledProcessError as e:
-        print('failed:\n'+str(e))
+    print("sync? (Y/n)")
+    response = input("> ")
+    if response in ['y', 'Y']:
+        print('syncing ... ', end='', flush=True)
+        try:
+            sync(args.survey)
+            print('done')
+        except subprocess.CalledProcessError as e:
+            print('failed:\n'+str(e))
