@@ -104,20 +104,15 @@ with open(survey_path, 'r') as f:
 # load data
 data_path = f'{config.path}/data/{args.survey}.csv'
 try:
-    dtype = {}
-    for name, specs in spec['questions'].items():
-        if 'dtype' in specs:
-            dtype[name] = specs['dtype']
     data = pd.read_csv(
             data_path,
-            dtype=dtype,
+            dtype=str, # use str datatype to avoid type inference changing things
             na_values=[],
             keep_default_na=False
     )
 except FileNotFoundError:
-    dtype = {}
     empty_data = {k:[] for k in spec['questions'].keys()}
-    data = pd.DataFrame(empty_data)
+    data = pd.DataFrame(empty_data).astype(str)
 
 # check if there are new questions
 for q in spec['questions'].keys():
@@ -268,9 +263,9 @@ else:
 
 if replace_data:
     data.drop(idx, axis=0, inplace=True)
-new_row = pd.DataFrame(row, index=[0]).astype(dtype=dtype)
+new_row = pd.DataFrame(row, index=[0]).astype(str)
 data = pd.concat((data, new_row), ignore_index=True)
-data.to_csv(data_path, index=False, float_format='%.2f')
+data.to_csv(data_path, index=False)
 
 # sync with remote if configured
 if config.remote:
