@@ -57,6 +57,12 @@ parser.add_argument(
         action='store_true',
         help='print tail of data file and exit.'
 )
+parser.add_argument(
+        '--from-file',
+        action='store',
+        type=str,
+        help='file to read autofill values from, useful for automating entries',
+)
 
 args = parser.parse_args()
 
@@ -139,13 +145,16 @@ if 'daily' in spec.keys() and not today.empty:
     [idx] = today.index.values
     today = today.iloc[0]
     row = today.to_dict()
+elif args.from_file:
+    with open(args.from_file, 'r') as f:
+        row = json.load(f)
 else:
     # initialize data row with keys only
     row = {q[0]: '' for q in questions}
 
-# autogen date/time cols
-row['date'] = todays_date
-row['time'] = datetime.datetime.now().time().isoformat(timespec='minutes')
+    # autogen date/time cols
+    row['date'] = todays_date
+    row['time'] = datetime.datetime.now().time().isoformat(timespec='minutes')
 
 
 # Quick data input in text editor
@@ -153,7 +162,7 @@ temp_path = f'{config.path}/data/.{args.survey}.tmp'
 if args.editor:
     # YAML is a hackier package and complains about numpy numeric types from pandas;
     #   also is more fiddly re: quotes
-    EDITOR = os.getenv("EDITOR")
+    EDITOR = os.getenv("EDITOR") or "vim"
     with open(temp_path,'w') as f:
         json.dump(row,f,indent=4)
     os.system(f"{EDITOR} {temp_path}")
