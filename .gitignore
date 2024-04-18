@@ -10,3 +10,5 @@ data/*.csv
 
 surveys/*.yaml
 !surveys/test.yaml
+
+autopay_files/

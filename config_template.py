@@ -8,5 +8,6 @@
 ############################################################################
 
 path = '/path/to/meatbag-UX' # NB no trailing `/`
+autopay_path = '/path/to/autopay_files'
 
 remote = False # NB no trailing `/`
