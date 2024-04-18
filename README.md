@@ -73,6 +73,9 @@ EOF
 chmod +x $path_loc/bag
 ```
 
+## Budget Add-Ons
 
-
+There are a couple of auxiliary scripts that facilitate using meatbag-UX for tracking spending and budgeting.
+* `autopay.py` makes it easy to track monthly payments in your money survey. To set it up, create a directory called e.g. `autopay_files`, put the path in `config.py`, and populate it with templates for monthly payments. The templates should look like what you get by running `bag -e` on your money survey, with the info filled in (for the date, enter the first due date you want to start from, and autopay will automatically track subsequent months). Then run `autopay.py`!
+* `budget.py` takes a survey with fields `date` and `io`, where `io` has values `in`, `out`, `save`, and just does the arithmetic. Edit to taste.
 
