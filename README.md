@@ -53,6 +53,8 @@ questions:
 
 ## Install
 
+Clone the repo, then copy or rename `config_template.py` to `config.py` and edit `config.py` to direct `path` towards the `meatbag-UX` directory. You can also direct `remote` to an rclone remote to enable syncing across devices.
+
 Here's an example script that will create a symbolic link for 'bag' command
 
 ```bash
